@@ -81,6 +81,16 @@ def initializeAllLetters():
     initializeGroupOfSameLetter("q", 10, 0)
 
     random.shuffle(bagWithAllLetters)
+def displayDirection(choice):
+    global directionInput
+    directionInput = choice
+def displayLine(choice):
+    global lineInput
+    lineInput = int(choice)
+def displayColumn(choice):
+    global columnInput
+    columnInput = int(choice)
+
 def InitializeBackground():
     beginX = 50
     beginY = 20
@@ -151,7 +161,7 @@ def InitializeBackground():
     variableDirection = StringVar(root)
     variableDirection.set(directionWord[0])
     global directionCB
-    directionCB = OptionMenu(root, variableDirection, *directionWord)
+    directionCB = OptionMenu(root, variableDirection, *directionWord, command=displayDirection)
     directionCB.place(x=positionDirectionX, y=positionDirectionY)
 
     labelPrint = Label(root, text="Column")
@@ -161,7 +171,7 @@ def InitializeBackground():
     variableColumn = StringVar(root)
     variableColumn.set(columnPositionCell[0])
     global columnCB
-    columnCB = OptionMenu(root, variableColumn, *columnPositionCell)
+    columnCB = OptionMenu(root, variableColumn, *columnPositionCell, command=displayColumn)
     columnCB.place(x=positionDirectionX, y=positionDirectionY + 80)
 
     labelPrint = Label(root, text="Line")
@@ -171,7 +181,7 @@ def InitializeBackground():
     variableLine = StringVar(root)
     variableLine.set(linePositionCell[0])
     global lineCB
-    lineCB = OptionMenu(root, variableLine, *linePositionCell)
+    lineCB = OptionMenu(root, variableLine, *linePositionCell, command=displayLine)
     lineCB.place(x=positionDirectionX + 80, y=positionDirectionY + 80)
 
     #text for error message
@@ -233,8 +243,9 @@ def InitializeBackground():
 
     placeLetter()
 
-def repaintLetter(x, y):
-    #850, 400
+def repaintLetter():
+    x = 850
+    y = 400
     count = 0
     for i in range(7):
         image1 = Image.open(f"Images/ResizeBackground.png")
@@ -244,7 +255,7 @@ def repaintLetter(x, y):
         label1.place(x=x + count * 50, y=y)
         count += 1
 def placeLetter():
-    if turnPlayer == 1:
+    if turnPlayer == 0:
         labelPrint = Label(root, text="Player 1 letters")
         labelPrint.place(x=850, y=350)
         labelPrint.config(font=("Courier Bold", 15))
@@ -260,10 +271,77 @@ def errorString():
     labelErrorMessage.configure(text=string)
 
 def placeWord():
+    def isInputUserBuildWithValidLetters(inputUser):
+        createWordWithClassLetter = list()
+        if turnPlayer == 0:
+            copyLettersPlayer = player1.letters
+        else:
+            copyLettersPlayer = player2.letters
+       # print(copyLettersPlayer)
+        for i in inputUser:
+            for j in copyLettersPlayer:
+                if i == j.letter:
+                    inputUser = inputUser.replace(i, "", 1)
+                    createWordWithClassLetter.append(j)
+                    break
+
+
+        #created a word with other letters
+        if inputUser == "":
+            return True, createWordWithClassLetter
+        return False, list()
+
     input1 = wordByUser.get()
+
+    print(input1)
+    print(isInputUserBuildWithValidLetters(input1))
+    if isInputUserBuildWithValidLetters(input1)[0] == False:
+        return
+    createWordWithClassLetter = isInputUserBuildWithValidLetters(input1)[1]
+    #finalCellWordLine = lineInput
+    #finalCellWordColumn = columnInput
+    if turnPlayer == 0:
+        for i in createWordWithClassLetter:
+            player1.letters.remove(i)
+    else:
+        for i in createWordWithClassLetter:
+            player2.letters.remove(i)
+    repaintLetter()
+    placeLetter()
+    if directionInput == "Horizontal":
+        indexColumn = columnInput
+        for i in createWordWithClassLetter:
+            image1 = Image.open(f"Images/Letters/{i.letterPos}.png")
+            test = ImageTk.PhotoImage(image1)
+            label1 = tkinter.Label(image=test)
+            label1.image = test
+            label1.place(x=matrixSquares[lineInput][indexColumn].pointX, y=matrixSquares[lineInput][indexColumn].pointY)
+            matrixSquares[lineInput][indexColumn].isBlocked = True
+            matrixSquares[lineInput][indexColumn].typeSquare = i
+            indexColumn += 1
+    else:
+        indexLine = lineInput
+        for i in createWordWithClassLetter:
+            image1 = Image.open(f"Images/Letters/{i.letterPos}.png")
+            test = ImageTk.PhotoImage(image1)
+            label1 = tkinter.Label(image=test)
+            label1.image = test
+            label1.place(x=matrixSquares[indexLine][columnInput].pointX, y=matrixSquares[indexLine][columnInput].pointY)
+            matrixSquares[indexLine][columnInput].isBlocked = True
+            matrixSquares[indexLine][columnInput].typeSquare = i
+            indexLine += 1
+
+    #if input1 not in dex:
+     #   return
+
+    #print(directionInput)
+    #print(lineInput)
+    #print(columnInput)
+
+
     #TODO validation word (after the checks, we can make the transition)
-    if input1 not in dex:
-        return False
+    #if input1 not in dex:
+        #return False
 
     lettersPlayer = list()
     localPoint = 0
@@ -305,9 +383,13 @@ def retryFun():
         player2.letters.clear()
         copySamplePlayer = random.sample(bagWithAllLetters, 7)
         for i in copySamplePlayer:
-            player1.letters.append(i)
+            player2.letters.append(i)
         turnPlayer = 0
         showLettersPlayer(player2, 850, 400)
+    #print("Player 1 litere")
+    #print(len(player1.letters))
+    #print("PLayer 2 litere")
+    #print(len(player2.letters))
 
 def changeActivityButtons(sir):
     if sir not in ["disabled", "normal", "enable"]:
@@ -316,15 +398,30 @@ def changeActivityButtons(sir):
     retryLettersButtons["state"] = sir
 
 def finishTurnFun():
+    stringSir1 = list()
+    print("Player 1")
+    for i in player1.letters:
+        stringSir1.append(i.letter);
+    print(stringSir1)
+    stringSir2 = list()
+    print("Player 2")
+    for i in player2.letters:
+        stringSir2.append(i.letter);
+    print(stringSir2)
     global turnPlayer
     if turnPlayer == 0:
         turnPlayer = 1
     else:
         turnPlayer = 0
+    repaintLetter()
     placeLetter()
-    repaintLetter(850, 400)
     # 850, 400
-    print(len(bagWithAllLetters))
+    #print(len(bagWithAllLetters))
+
+    #print("Player 1 litere")
+    #print(len(player1.letters))
+    #print("PLayer 2 litere")
+    #print(len(player2.letters))
 
 def showLettersPlayer(player, x, y):
     count = 0
@@ -349,6 +446,7 @@ takeLettersForPlayer = 7
 dex = list()
 bagWithAllLetters = list()
 matrixSquares = list(list())
+# TODO: insert better starting message
 directionWord = ["Horizontal", "Vertical"]
 linePositionCell = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 columnPositionCell = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
