@@ -1,0 +1,14 @@
+TODO: make this a template to generate the letters
+coordonate patrat h: 520 px    w: 520 px
+coordonate litera:
+	stanga sus: h: 90 px     w:70 px
+       dreapta jos: h:365 px     w: 335
+
+coordonate cifra:
+        stanga sus: h: 365 px  w: 390 px
+       dreapta jos: h: 440 px  w: 440 px
+
+FONT: https://fonts.google.com/specimen/Arimo TODO: download the ttf file and get it here (automati)
+Marime font litera:300 px
+Marime font cifra: 80 px
+Nuanta utilizata pt. Font: #02636B #aici sa fie codul RGB
