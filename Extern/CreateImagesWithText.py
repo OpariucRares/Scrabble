@@ -1,6 +1,6 @@
 from PIL import Image, ImageFont, ImageDraw, ImageTk
 
-#TODO take the points from the dictionary template
+# TODO take the points from the dictionary template
 
 letterPoints = [{"I": 1}, {"A": 1}, {"E": 1}, {"T": 1}, {"N": 1}, {"R": 1}, {"S": 1}, {"C": 1}, {"L": 1}, {"U": 1},
                 {"O": 2}, {"P": 2}, {"D": 3}, {"M": 4}, {"F": 4}, {"V": 4}, {"B": 5}, {"G": 6}, {"H": 8}, {"Z": 8},

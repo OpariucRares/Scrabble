@@ -99,14 +99,37 @@ def displayDirection(choice):
     directionInput = choice
 
 
-def displayLine(choice):
-    global lineInput
-    lineInput = int(choice)
+def colorSelection(lineColorSelection, coloumnColorSelection, color):
+    if placeWordButton["state"] == "enable" or retryLettersButtons["state"] == "enable":
+        verticalLeft = Frame(root, bg=color, height=50, width=2)
+        verticalRight = Frame(root, bg=color, height=50, width=2)
+        horizontalUp = Frame(root, bg=color, height=2, width=50)
+        horizontalDown = Frame(root, bg=color, height=2, width=52)
+        copySquare = matrixSquares[lineColorSelection][coloumnColorSelection]
+        verticalLeft.place(x=copySquare.pointX, y=copySquare.pointY)
+        verticalRight.place(x=copySquare.pointX + 50, y=copySquare.pointY)
+        horizontalUp.place(x=copySquare.pointX + 1, y=copySquare.pointY)
+        horizontalDown.place(x=copySquare.pointX, y=copySquare.pointY + 50)
+def getMouseClickPosition(line, column):
+    def func(e):  # func will be passed an event.
+        global lineSquareSelected, columnSquareSelected, labelErrorMessage, previousSquare
+        isPreviousSquareDefined = True
+        try:
+            previousSquare
+        except NameError:
+            isPreviousSquareDefined = False
+        if isPreviousSquareDefined is True:
+            if previousSquare is not None:
+                colorSelection(previousSquare[0], previousSquare[1], '#F0F0F0')
 
 
-def displayColumn(choice):
-    global columnInput
-    columnInput = int(choice)
+        lineSquareSelected = line
+        columnSquareSelected = column
+        colorSelection(lineSquareSelected, columnSquareSelected, 'red')
+        if placeWordButton["state"] == "enable" or retryLettersButtons["state"] == "enable":
+            labelErrorMessage.config(text="Ati ales patratul de pe\nlinia " + str(line + 1) + " si coloana " + str(column + 1))
+        previousSquare = (line, column)
+    return func
 
 
 def InitializeBackground():
@@ -161,12 +184,29 @@ def InitializeBackground():
     # center cell
     matrixSquares[7][7].pathImage = "Images/ResizeStart.png"
     matrixSquares[7][7].typeSquare = TypeCell.START_CELL
+    #work for click function
+    # text for error message
+
+    posRectangleX = 850
+    posRectangleY = 180
+    canvas = Canvas(root, width=700, height=100, bg='#315399')
+    # canvas.pack()
+    canvas.create_rectangle(posRectangleX, posRectangleY, posRectangleX + 100, posRectangleY + 60, fill="red")
+    canvas.place(x=posRectangleX, y=posRectangleY)
+
+    global labelErrorMessage
+    labelErrorMessage = Label(root, text="Sa inceapa jocul",
+                              font=("Courier 15 bold"), justify='left')  # TODO: restructure the interface for the app
+    labelErrorMessage.place(x=880, y=200)
+
     # create the table
     for i in range(len(matrixSquares)):
         for j in range(len(matrixSquares[i])):
+
             image1 = Image.open(matrixSquares[i][j].pathImage)
             test = ImageTk.PhotoImage(image1)
             label1 = tkinter.Label(image=test)
+            label1.bind('<Button-1>', getMouseClickPosition(i, j))
             label1.image = test
             label1.place(x=matrixSquares[i][j].pointX, y=matrixSquares[i][j].pointY)
 
@@ -183,39 +223,15 @@ def InitializeBackground():
     directionCB = OptionMenu(root, variableDirection, *directionWord, command=displayDirection)
     directionCB.place(x=positionDirectionX, y=positionDirectionY)
 
-    labelPrint = Label(root, text="Column")
-    labelPrint.place(x=positionDirectionX, y=positionDirectionY + 50)
-    labelPrint.config(font=("Courier", 10))
-
     variableColumn = StringVar(root)
     variableColumn.set(columnPositionCell[0])
-    global columnCB
-    columnCB = OptionMenu(root, variableColumn, *columnPositionCell, command=displayColumn)
-    columnCB.place(x=positionDirectionX, y=positionDirectionY + 80)
-
-    labelPrint = Label(root, text="Line")
-    labelPrint.place(x=positionDirectionX + 80, y=positionDirectionY + 50)
-    labelPrint.config(font=("Courier", 10))
 
     variableLine = StringVar(root)
     variableLine.set(linePositionCell[0])
-    global lineCB
-    lineCB = OptionMenu(root, variableLine, *linePositionCell, command=displayLine)
-    lineCB.place(x=positionDirectionX + 80, y=positionDirectionY + 80)
 
-    # text for error message
 
-    posRectangleX = 850
-    posRectangleY = 180
-    canvas = Canvas(root, width=700, height=100, bg='#315399')
-    # canvas.pack()
-    canvas.create_rectangle(posRectangleX, posRectangleY, posRectangleX + 100, posRectangleY + 60, fill="red")
-    canvas.place(x=posRectangleX, y=posRectangleY)
 
-    global labelErrorMessage
-    labelErrorMessage = Label(root, text="Sa inceapa jocul",
-                              font=("Courier 15 bold"), justify='left')  # TODO: restructure the interface for the app
-    labelErrorMessage.place(x=880, y=200)
+
     # canvas.pack()
 
     # player scores
@@ -327,22 +343,18 @@ def placeWord():
         labelErrorMessage.config(text="Cuvantul nu este scris cu literele corecte")
         return
     createWordWithClassLetter = isInputUserBuildWithValidLetters(input1)[1]
-    # finalCellWordLine = lineInput
-    # finalCellWordColumn = columnInput
     try:
         directionInput
-    except NameError:
+    except:
         labelErrorMessage.config(text="Nu ati ales directia")
         return
     try:
-        lineInput
+        lineSquareSelected
     except NameError:
-        labelErrorMessage.config(text="Nu ati ales linia primei litere")
+        labelErrorMessage.config(text="Nu ati ales patratul")
         return
-    try:
-        columnInput
-    except NameError:
-        labelErrorMessage.config(text="Nu ati ales coloana primei litere")
+    if lineSquareSelected is None:
+        labelErrorMessage.config(text="Nu ati ales patratul")
         return
     for i in createWordWithClassLetter:
         playerList[turnPlayer].letters.remove(i)
@@ -350,30 +362,30 @@ def placeWord():
     hideLetters()
     finishTurnForUI()
     if directionInput == "Horizontal":
-        indexColumn = columnInput
+        indexColumn = columnSquareSelected
         for i in createWordWithClassLetter:
             image1 = Image.open(f"Images/Letters/{i.letterPos}.png")
             test = ImageTk.PhotoImage(image1)
             label1 = tkinter.Label(image=test)
             label1.image = test
-            label1.place(x=matrixSquares[lineInput][indexColumn].pointX, y=matrixSquares[lineInput][indexColumn].pointY)
-            matrixSquares[lineInput][indexColumn].isBlocked = True
-            matrixSquares[lineInput][indexColumn].typeSquare = i
+            label1.place(x=matrixSquares[lineSquareSelected][indexColumn].pointX, y=matrixSquares[lineSquareSelected][indexColumn].pointY)
+            matrixSquares[lineSquareSelected][indexColumn].isBlocked = True
+            matrixSquares[lineSquareSelected][indexColumn].typeSquare = i
             indexColumn += 1
     else:
-        indexLine = lineInput
+        indexLine = lineSquareSelected
         for i in createWordWithClassLetter:
             image1 = Image.open(f"Images/Letters/{i.letterPos}.png")
             test = ImageTk.PhotoImage(image1)
             label1 = tkinter.Label(image=test)
             label1.image = test
-            label1.place(x=matrixSquares[indexLine][columnInput].pointX, y=matrixSquares[indexLine][columnInput].pointY)
-            matrixSquares[indexLine][columnInput].isBlocked = True
-            matrixSquares[indexLine][columnInput].typeSquare = i
+            label1.place(x=matrixSquares[indexLine][columnSquareSelected].pointX, y=matrixSquares[indexLine][columnSquareSelected].pointY)
+            matrixSquares[indexLine][columnSquareSelected].isBlocked = True
+            matrixSquares[indexLine][columnSquareSelected].typeSquare = i
             indexLine += 1
     changeActivityButtons(sTakeLetters="enable")
     labelErrorMessage.config(text="Luati litere noi")
-
+    colorSelection(previousSquare[0], previousSquare[1], '#F0F0F0')
 
 def takeLetters():
     stringNewLetters = ""
@@ -396,6 +408,7 @@ def retryFun():
     for i in copySamplePlayer:
         playerList[turnPlayer].letters.append(i)
     showLettersPlayer(playerList[turnPlayer])
+    colorSelection(previousSquare[0], previousSquare[1], '#F0F0F0')
     changeActivityButtons(sHideLetters="enable")
     labelErrorMessage.config(text="Ati luat litere noi. \nAscundeti literele si lasati urmatorul player")
 
@@ -407,21 +420,23 @@ def changeActivityButtons(sPlaceWord="disabled", sRetryLetters="disabled", sTake
         if sir not in ["disabled", "normal", "enable"]:
             return
     # TODO: testing passed, decomment when it is done
-    # placeWordButton["state"] = sPlaceWord
-    # retryLettersButtons["state"] = sRetryLetters
-    # takeLettersAfterPlacedWordButton["state"] = sTakeLetters
-    # hideLettersButton["state"] = sHideLetters
-    # finishTurnButtons["state"] = sFinishTurn
+    placeWordButton["state"] = sPlaceWord
+    retryLettersButtons["state"] = sRetryLetters
+    takeLettersAfterPlacedWordButton["state"] = sTakeLetters
+    hideLettersButton["state"] = sHideLetters
+    finishTurnButtons["state"] = sFinishTurn
 
 
 def finishTurnFun():
-    global turnPlayer
+    global turnPlayer, lineSquareSelected, columnSquareSelected, previousSquare
     turnPlayer = (turnPlayer + 1) % maxPlayers
     hideLetters()
     finishTurnForUI()
     changeActivityButtons(sPlaceWord="enable", sRetryLetters="enable")
     labelErrorMessage.config(text="Randul " + playerList[turnPlayer].name)
-
+    lineSquareSelected = None
+    columnSquareSelected = None
+    previousSquare = None
 
 def showLettersPlayer(player):
     count = 0
@@ -440,11 +455,8 @@ def showLettersPlayer(player):
 root = Tk()
 root.title("Scrabble")
 root.geometry("800x600")
-w = 1000
-h = 1000
-x = w / 2
-y = h / 2
 root.configure(bg='#315399')
+frame = Frame(root, width=800, height=600)
 
 takeLettersForPlayer = 7
 dex = list()
@@ -456,11 +468,13 @@ linePositionCell = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 columnPositionCell = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 turnPlayer = 0
 maxPlayers = 2
+mouseClickX, mouseClickY = -1, -1
 initializeDex()
 initializeAllLetters()
 player1 = Player("Player 1", 0, random.sample(bagWithAllLetters, 7))
 player2 = Player("Player 2", 0, random.sample(bagWithAllLetters, 7))
 playerList = [player1, player2]
+
 InitializeBackground()
 
 root.mainloop()
