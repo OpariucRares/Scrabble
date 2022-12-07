@@ -5,6 +5,7 @@ from tkinter import ttk
 from enum import Enum
 from PIL import ImageTk, Image
 
+
 class TypeCell(Enum):
     START_CELL = 1
     EMPTY = 2
@@ -13,13 +14,17 @@ class TypeCell(Enum):
     TRIPLE_LETTER = 5
     TRIPLE_WORD = 6
 
+
 class Letter:
-    def __init__(self, letter, points): #TODO: add image
+    def __init__(self, letter, points):  # TODO: add image
         self.letter = letter
         self.points = points
         self.letterPos = ord(letter) - ord("a")
+
     def __str__(self):
         return f"{self.letter} Position: {self.letterPos} Points: {self.points}"
+
+
 class Square:
     def __init__(self, position, pointX, pointY, isBlocked, typeSquare, pathImage):
         self.position = position
@@ -28,6 +33,8 @@ class Square:
         self.isBlocked = isBlocked
         self.typeSquare = typeSquare
         self.pathImage = pathImage
+
+
 class Player:
     def __init__(self, name, points, letters):
         self.name = name
@@ -36,15 +43,19 @@ class Player:
         for i in letters:
             bagWithAllLetters.remove(i)
 
+
 def initializeDex():
-    #fd = open(sys.argv[1], "rt")
+    # fd = open(sys.argv[1], "rt")
     fd = open("Dictionaries/dictionary.txt", "rt", encoding="utf8")
     for word in fd:
         dex.append(word.strip("\n"))
+
+
 def initializeAllLetters():
     def initializeGroupOfSameLetter(letter, points, numberTimes):
         for i in range(numberTimes):
             bagWithAllLetters.append(Letter(letter, points))
+
     initializeGroupOfSameLetter("_", 0, 2)
     initializeGroupOfSameLetter("i", 1, 11)
     initializeGroupOfSameLetter("a", 1, 10)
@@ -81,25 +92,33 @@ def initializeAllLetters():
     initializeGroupOfSameLetter("q", 10, 0)
 
     random.shuffle(bagWithAllLetters)
+
+
 def displayDirection(choice):
     global directionInput
     directionInput = choice
+
+
 def displayLine(choice):
     global lineInput
     lineInput = int(choice)
+
+
 def displayColumn(choice):
     global columnInput
     columnInput = int(choice)
+
 
 def InitializeBackground():
     beginX = 50
     beginY = 20
     countSquares = 0
-    #add empty cells
+    # add empty cells
     for i in range(15):
         row = list()
         for j in range(15):
-            square = Square(countSquares, beginX + j * 50, beginY + i * 50, False, TypeCell.EMPTY, "Images/ResizeEmptyCell.png")
+            square = Square(countSquares, beginX + j * 50, beginY + i * 50, False, TypeCell.EMPTY,
+                            "Images/ResizeEmptyCell.png")
             row.append(square)
         matrixSquares.append(row)
     for i in range(15):
@@ -108,12 +127,12 @@ def InitializeBackground():
     for i in range(15):
         matrixSquares[i][14 - i].pathImage = "Images/ResizeDoubleWord.png"
         matrixSquares[i][i].typeSquare = TypeCell.DOUBLE_WORD
-    #triple word
+    # triple word
     for i in range(0, 15, 7):
         for j in range(0, 15, 7):
             matrixSquares[i][j].pathImage = "Images/ResizeTripleWord.png"
             matrixSquares[i][i].typeSquare = TypeCell.TRIPLE_WORD
-    #triple letter
+    # triple letter
     for i in [1, 5, 9, 13]:
         for j in [5, 9]:
             matrixSquares[i][j].pathImage = "Images/ResizeTripleLetter.png"
@@ -122,7 +141,7 @@ def InitializeBackground():
         matrixSquares[5][j].pathImage = "Images/ResizeTripleLetter.png"
         matrixSquares[9][j].pathImage = "Images/ResizeTripleLetter.png"
         matrixSquares[i][i].typeSquare = TypeCell.TRIPLE_LETTER
-    #double letter
+    # double letter
     for i in [3, 11]:
         for j in [0, 7, 14]:
             matrixSquares[i][j].pathImage = "Images/ResizeDoubleLetter.png"
@@ -139,10 +158,10 @@ def InitializeBackground():
         for j in [6, 8]:
             matrixSquares[i][j].pathImage = "Images/ResizeDoubleLetter.png"
             matrixSquares[i][i].typeSquare = TypeCell.DOUBLE_LETTER
-    #center cell
+    # center cell
     matrixSquares[7][7].pathImage = "Images/ResizeStart.png"
     matrixSquares[7][7].typeSquare = TypeCell.START_CELL
-    #create the table
+    # create the table
     for i in range(len(matrixSquares)):
         for j in range(len(matrixSquares[i])):
             image1 = Image.open(matrixSquares[i][j].pathImage)
@@ -152,7 +171,7 @@ def InitializeBackground():
             label1.place(x=matrixSquares[i][j].pointX, y=matrixSquares[i][j].pointY)
 
     positionDirectionX = 1300
-    positionDirectionY = 600
+    positionDirectionY = 550
 
     labelPrint = Label(root, text="Direction of the word")
     labelPrint.place(x=positionDirectionX, y=positionDirectionY - 30)
@@ -184,25 +203,26 @@ def InitializeBackground():
     lineCB = OptionMenu(root, variableLine, *linePositionCell, command=displayLine)
     lineCB.place(x=positionDirectionX + 80, y=positionDirectionY + 80)
 
-    #text for error message
+    # text for error message
 
     posRectangleX = 850
     posRectangleY = 180
     canvas = Canvas(root, width=700, height=100, bg='#315399')
-    #canvas.pack()
+    # canvas.pack()
     canvas.create_rectangle(posRectangleX, posRectangleY, posRectangleX + 100, posRectangleY + 60, fill="red")
     canvas.place(x=posRectangleX, y=posRectangleY)
 
     global labelErrorMessage
-    labelErrorMessage = Label(root, text="Urasc Tkinter", font=("Courier 15 bold"))  # TODO: restructure the interface for the app
+    labelErrorMessage = Label(root, text="Sa inceapa jocul",
+                              font=("Courier 15 bold"), justify='left')  # TODO: restructure the interface for the app
     labelErrorMessage.place(x=880, y=200)
-    #canvas.pack()
+    # canvas.pack()
 
-    #player scores
+    # player scores
     positionXPlayerName = 850
     positionYPlayerName = 20
     fontPlayerName = 30
-    labelPrint =Label(root, text="Player One:")
+    labelPrint = Label(root, text="Player One:")
     labelPrint.place(x=positionXPlayerName, y=positionYPlayerName)
     labelPrint.config(font=("Courier", fontPlayerName))
     labelPrint = Label(root, text="Player Two:")
@@ -220,94 +240,115 @@ def InitializeBackground():
     pointsLabelPlayerTwo.place(x=positionXPoints, y=positionYPlayerName + 60)
     pointsLabelPlayerTwo.config(font=("Courier", fontPlayerName))
 
-    labelPrint = Label(root, text="Enter your word:")
-    labelPrint.place(x=900, y=640)
-    labelPrint.config(font=("Courier", 15))
+    buttonWidth = 15
 
     global wordByUser
     wordByUser = Entry(root, width=40)
     wordByUser.focus_set()
-    wordByUser.place(x=900, y=680)
+    wordByUserPosX = 850
+    wordByUserPosY = 550
+    wordByUser.place(x=wordByUserPosX, y=wordByUserPosY)
+    labelPrint = Label(root, text="Enter your word:")
+    labelPrint.place(x=wordByUserPosX, y=wordByUserPosY - 40)
+    labelPrint.config(font=("Courier", 15))
 
+    placeButtonsStartPosX = 850
+    placeButtonsStartPosY = 700
+    distanceBetweenButtons = 110
     global placeWordButton
-    placeWordButton = ttk.Button(root, text="Place Word", width=20, command=placeWord)
-    placeWordButton.place(x=1150, y=750)
+    placeWordButton = ttk.Button(root, text="Place Word", width=buttonWidth, command=placeWord)
+    placeWordButton.place(x=placeButtonsStartPosX, y=placeButtonsStartPosY)
 
     global retryLettersButtons
-    retryLettersButtons = ttk.Button(root, text="Retry Letters", width=20, command=retryFun)
-    retryLettersButtons.place(x=1000, y=750)
+    retryLettersButtons = ttk.Button(root, text="Retry Letters", width=buttonWidth, command=retryFun)
+    retryLettersButtons.place(x=placeButtonsStartPosX + distanceBetweenButtons, y=placeButtonsStartPosY)
+
+    global takeLettersAfterPlacedWordButton
+    takeLettersAfterPlacedWordButton = ttk.Button(root, text="Take Letters", width=buttonWidth, command=takeLetters)
+    takeLettersAfterPlacedWordButton.place(x=placeButtonsStartPosX + 2 * distanceBetweenButtons,
+                                           y=placeButtonsStartPosY)
+
+    global hideLettersButton
+    hideLettersButton = ttk.Button(root, text="Hide Letters", width=buttonWidth, command=hideLetters)
+    hideLettersButton.place(x=placeButtonsStartPosX + 3 * distanceBetweenButtons, y=placeButtonsStartPosY)
 
     global finishTurnButtons
-    finishTurnButtons = ttk.Button(root, text="Finish turn", width=20, command=finishTurnFun)
-    finishTurnButtons.place(x=1300, y=750)
+    finishTurnButtons = ttk.Button(root, text="Finish turn", width=buttonWidth, command=finishTurnFun)
+    finishTurnButtons.place(x=placeButtonsStartPosX + 4 * distanceBetweenButtons, y=placeButtonsStartPosY)
 
-    placeLetter()
+    finishTurnForUI()
+    changeActivityButtons(sPlaceWord="enable", sRetryLetters="enable")
 
-def repaintLetter():
-    x = 850
-    y = 400
+
+def hideLetters():
+    xHide = 850
+    yHide = 400
     count = 0
     for i in range(7):
         image1 = Image.open(f"Images/ResizeBackground.png")
         test = ImageTk.PhotoImage(image1)
         label1 = tkinter.Label(image=test)
         label1.image = test
-        label1.place(x=x + count * 50, y=y)
+        label1.place(x=xHide + count * 50, y=yHide)
         count += 1
-def placeLetter():
-    if turnPlayer == 0:
-        labelPrint = Label(root, text="Player 1 letters")
-        labelPrint.place(x=850, y=350)
-        labelPrint.config(font=("Courier Bold", 15))
-        showLettersPlayer(player1, 850, 400)
-    else:
-        labelPrint = Label(root, text="Player 2 letters")
-        labelPrint.place(x=850, y=350)
-        labelPrint.config(font=("Courier Bold", 15))
-        showLettersPlayer(player2, 850, 400)
+    labelErrorMessage.config(text="Randul urmatorului player")
+    changeActivityButtons(sFinishTurn="enable")
 
-def errorString():
-    string = wordByUser.get()
-    labelErrorMessage.configure(text=string)
+
+def finishTurnForUI():
+    labelPrint = Label(root, text=playerList[turnPlayer].name)
+    labelPrint.place(x=850, y=350)
+    labelPrint.config(font=("Courier Bold", 15))
+    showLettersPlayer(playerList[turnPlayer])
+
 
 def placeWord():
     def isInputUserBuildWithValidLetters(inputUser):
-        createWordWithClassLetter = list()
-        if turnPlayer == 0:
-            copyLettersPlayer = player1.letters
-        else:
-            copyLettersPlayer = player2.letters
-       # print(copyLettersPlayer)
+        placeWordList = list()
+        copyLettersPlayer = playerList[turnPlayer].letters
+        # print(copyLettersPlayer)
         for i in inputUser:
             for j in copyLettersPlayer:
                 if i == j.letter:
                     inputUser = inputUser.replace(i, "", 1)
-                    createWordWithClassLetter.append(j)
+                    placeWordList.append(j)
                     break
 
-
-        #created a word with other letters
+        # created a word with other letters
         if inputUser == "":
-            return True, createWordWithClassLetter
+            return True, placeWordList
         return False, list()
 
     input1 = wordByUser.get()
-
-    print(input1)
-    print(isInputUserBuildWithValidLetters(input1))
-    if isInputUserBuildWithValidLetters(input1)[0] == False:
+    if input1 not in dex:
+        labelErrorMessage.config(text="Nu exista cuvantul")
+        return
+    if not isInputUserBuildWithValidLetters(input1)[0]:
+        labelErrorMessage.config(text="Cuvantul nu este scris cu literele corecte")
         return
     createWordWithClassLetter = isInputUserBuildWithValidLetters(input1)[1]
-    #finalCellWordLine = lineInput
-    #finalCellWordColumn = columnInput
-    if turnPlayer == 0:
-        for i in createWordWithClassLetter:
-            player1.letters.remove(i)
-    else:
-        for i in createWordWithClassLetter:
-            player2.letters.remove(i)
-    repaintLetter()
-    placeLetter()
+    # finalCellWordLine = lineInput
+    # finalCellWordColumn = columnInput
+    try:
+        directionInput
+    except NameError:
+        labelErrorMessage.config(text="Nu ati ales directia")
+        return
+    try:
+        lineInput
+    except NameError:
+        labelErrorMessage.config(text="Nu ati ales linia primei litere")
+        return
+    try:
+        columnInput
+    except NameError:
+        labelErrorMessage.config(text="Nu ati ales coloana primei litere")
+        return
+    for i in createWordWithClassLetter:
+        playerList[turnPlayer].letters.remove(i)
+
+    hideLetters()
+    finishTurnForUI()
     if directionInput == "Horizontal":
         indexColumn = columnInput
         for i in createWordWithClassLetter:
@@ -330,109 +371,72 @@ def placeWord():
             matrixSquares[indexLine][columnInput].isBlocked = True
             matrixSquares[indexLine][columnInput].typeSquare = i
             indexLine += 1
-
-    #if input1 not in dex:
-     #   return
-
-    #print(directionInput)
-    #print(lineInput)
-    #print(columnInput)
+    changeActivityButtons(sTakeLetters="enable")
+    labelErrorMessage.config(text="Luati litere noi")
 
 
-    #TODO validation word (after the checks, we can make the transition)
-    #if input1 not in dex:
-        #return False
-
-    lettersPlayer = list()
-    localPoint = 0
-    if turnPlayer == 0:
-        for i in player1.letters:
-            lettersPlayer.append(i)
-    else:
-        for i in player2.letters:
-            lettersPlayer.append(i)
-
-    for i in input1:
-        # find the letter
-        for index in lettersPlayer:
-            if i == index.letter:
-                localPoint = localPoint + index.points
-                lettersPlayer.remove(index)
-                input1.replace(i, "")
-                break
-
-    takeLettersForPlayer = len(input1)
-    return True
-
+def takeLetters():
+    stringNewLetters = ""
+    numberLetters = 7 - len(playerList[turnPlayer].letters)
+    copySamplePlayer = random.sample(bagWithAllLetters, numberLetters)
+    for i in copySamplePlayer:
+        playerList[turnPlayer].letters.append(i)
+        stringNewLetters = stringNewLetters + i.letter
+        stringNewLetters += " "
+    showLettersPlayer(playerList[turnPlayer])
+    changeActivityButtons(sHideLetters="enable")
+    labelErrorMessage.config(text="Lierele noi sunt " + stringNewLetters + "\nAscundeti literele ca sa vina urmatorul player")
 
 def retryFun():
-    global turnPlayer
-   # changeActivityButtons("disabled")
-    if turnPlayer == 0:
-        for i in player1.letters:
-            bagWithAllLetters.append(i)
-        player1.letters.clear()
-        copySamplePlayer = random.sample(bagWithAllLetters, 7)
-        for i in copySamplePlayer:
-            player1.letters.append(i)
-        turnPlayer = 1
-        showLettersPlayer(player1, 850, 400)
-    else:
-        for i in player2.letters:
-            bagWithAllLetters.append(i)
-        player2.letters.clear()
-        copySamplePlayer = random.sample(bagWithAllLetters, 7)
-        for i in copySamplePlayer:
-            player2.letters.append(i)
-        turnPlayer = 0
-        showLettersPlayer(player2, 850, 400)
-    #print("Player 1 litere")
-    #print(len(player1.letters))
-    #print("PLayer 2 litere")
-    #print(len(player2.letters))
+    # changeActivityButtons("disabled")
+    for i in player1.letters:
+        bagWithAllLetters.append(i)
+    playerList[turnPlayer].letters.clear()
+    copySamplePlayer = random.sample(bagWithAllLetters, 7)
+    for i in copySamplePlayer:
+        playerList[turnPlayer].letters.append(i)
+    showLettersPlayer(playerList[turnPlayer])
+    changeActivityButtons(sHideLetters="enable")
+    labelErrorMessage.config(text="Ati luat litere noi. \nAscundeti literele si lasati urmatorul player")
 
-def changeActivityButtons(sir):
-    if sir not in ["disabled", "normal", "enable"]:
-        return
-    placeWordButton["state"] = sir
-    retryLettersButtons["state"] = sir
+
+def changeActivityButtons(sPlaceWord="disabled", sRetryLetters="disabled", sTakeLetters="disabled",
+                          sHideLetters="disabled", sFinishTurn="disabled"):
+    listInput = [sPlaceWord, sRetryLetters, sTakeLetters, sHideLetters, sFinishTurn]
+    for sir in listInput:
+        if sir not in ["disabled", "normal", "enable"]:
+            return
+    # TODO: testing passed, decomment when it is done
+    # placeWordButton["state"] = sPlaceWord
+    # retryLettersButtons["state"] = sRetryLetters
+    # takeLettersAfterPlacedWordButton["state"] = sTakeLetters
+    # hideLettersButton["state"] = sHideLetters
+    # finishTurnButtons["state"] = sFinishTurn
+
 
 def finishTurnFun():
-    stringSir1 = list()
-    print("Player 1")
-    for i in player1.letters:
-        stringSir1.append(i.letter);
-    print(stringSir1)
-    stringSir2 = list()
-    print("Player 2")
-    for i in player2.letters:
-        stringSir2.append(i.letter);
-    print(stringSir2)
     global turnPlayer
-    if turnPlayer == 0:
-        turnPlayer = 1
-    else:
-        turnPlayer = 0
-    repaintLetter()
-    placeLetter()
-    # 850, 400
-    #print(len(bagWithAllLetters))
+    turnPlayer = (turnPlayer + 1) % maxPlayers
+    hideLetters()
+    finishTurnForUI()
+    changeActivityButtons(sPlaceWord="enable", sRetryLetters="enable")
+    labelErrorMessage.config(text="Randul " + playerList[turnPlayer].name)
 
-    #print("Player 1 litere")
-    #print(len(player1.letters))
-    #print("PLayer 2 litere")
-    #print(len(player2.letters))
 
-def showLettersPlayer(player, x, y):
+def showLettersPlayer(player):
     count = 0
+    showLettersX = 850
+    showLettersY = 400
     for i in player.letters:
         indexImagine = ord(i.letter) - ord("a")
         image1 = Image.open(f"Images/Letters/{indexImagine}.png")
         test = ImageTk.PhotoImage(image1)
         label1 = tkinter.Label(image=test)
         label1.image = test
-        label1.place(x=x + count * 50, y=y)
+        label1.place(x=showLettersX + count * 50, y=showLettersY)
         count += 1
+
+
 root = Tk()
 root.title("Scrabble")
 root.geometry("800x600")
@@ -451,17 +455,15 @@ directionWord = ["Horizontal", "Vertical"]
 linePositionCell = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 columnPositionCell = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 turnPlayer = 0
-
+maxPlayers = 2
 initializeDex()
 initializeAllLetters()
 player1 = Player("Player 1", 0, random.sample(bagWithAllLetters, 7))
 player2 = Player("Player 2", 0, random.sample(bagWithAllLetters, 7))
+playerList = [player1, player2]
 InitializeBackground()
-
-
-
 
 root.mainloop()
 
-#if __name__ == '__main__':
- #   print("hello")
+# if __name__ == '__main__':
+#   print("hello")
