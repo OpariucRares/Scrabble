@@ -7,12 +7,11 @@ from PIL import ImageTk, Image
 
 
 class TypeCell(Enum):
-    START_CELL = 1
-    EMPTY = 2
-    DOUBLE_LETTER = 3
-    DOUBLE_WORD = 4
-    TRIPLE_LETTER = 5
-    TRIPLE_WORD = 6
+    EMPTY = 1
+    DOUBLE_LETTER = 2
+    DOUBLE_WORD = 3
+    TRIPLE_LETTER = 4
+    TRIPLE_WORD = 5
 
 
 class Letter:
@@ -100,7 +99,8 @@ def displayDirection(choice):
 
 
 def colorSelection(lineColorSelection, coloumnColorSelection, color):
-    if placeWordButton["state"] == "enable" or retryLettersButtons["state"] == "enable":
+    # TODO : de comentat pt proiectul final
+    #if placeWordButton["state"] == "enable" or retryLettersButtons["state"] == "enable":
         verticalLeft = Frame(root, bg=color, height=50, width=2)
         verticalRight = Frame(root, bg=color, height=50, width=2)
         horizontalUp = Frame(root, bg=color, height=2, width=50)
@@ -113,6 +113,7 @@ def colorSelection(lineColorSelection, coloumnColorSelection, color):
 def getMouseClickPosition(line, column):
     def func(e):  # func will be passed an event.
         global lineSquareSelected, columnSquareSelected, labelErrorMessage, previousSquare
+        print(69)
         isPreviousSquareDefined = True
         try:
             previousSquare
@@ -126,12 +127,11 @@ def getMouseClickPosition(line, column):
         lineSquareSelected = line
         columnSquareSelected = column
         colorSelection(lineSquareSelected, columnSquareSelected, 'red')
-        if placeWordButton["state"] == "enable" or retryLettersButtons["state"] == "enable":
-            labelErrorMessage.config(text="Ati ales patratul de pe\nlinia " + str(line + 1) + " si coloana " + str(column + 1))
+        # TODO : decomentat pt proiectul final
+        #if placeWordButton["state"] == "enable" or retryLettersButtons["state"] == "enable":
+        labelErrorMessage.config(text="Ati ales patratul de pe\nlinia " + str(line + 1) + " si coloana " + str(column + 1))
         previousSquare = (line, column)
     return func
-
-
 def InitializeBackground():
     beginX = 50
     beginY = 20
@@ -149,41 +149,42 @@ def InitializeBackground():
         matrixSquares[i][i].typeSquare = TypeCell.DOUBLE_WORD
     for i in range(15):
         matrixSquares[i][14 - i].pathImage = "Images/ResizeDoubleWord.png"
-        matrixSquares[i][i].typeSquare = TypeCell.DOUBLE_WORD
+        matrixSquares[i][14 - i].typeSquare = TypeCell.DOUBLE_WORD
     # triple word
     for i in range(0, 15, 7):
         for j in range(0, 15, 7):
             matrixSquares[i][j].pathImage = "Images/ResizeTripleWord.png"
-            matrixSquares[i][i].typeSquare = TypeCell.TRIPLE_WORD
+            matrixSquares[i][j].typeSquare = TypeCell.TRIPLE_WORD
     # triple letter
     for i in [1, 5, 9, 13]:
         for j in [5, 9]:
             matrixSquares[i][j].pathImage = "Images/ResizeTripleLetter.png"
-            matrixSquares[i][i].typeSquare = TypeCell.TRIPLE_LETTER
+            matrixSquares[i][j].typeSquare = TypeCell.TRIPLE_LETTER
     for j in [1, 13]:
         matrixSquares[5][j].pathImage = "Images/ResizeTripleLetter.png"
         matrixSquares[9][j].pathImage = "Images/ResizeTripleLetter.png"
-        matrixSquares[i][i].typeSquare = TypeCell.TRIPLE_LETTER
+        matrixSquares[5][j].typeSquare = TypeCell.TRIPLE_LETTER
+        matrixSquares[9][j].typeSquare = TypeCell.TRIPLE_LETTER
     # double letter
     for i in [3, 11]:
         for j in [0, 7, 14]:
             matrixSquares[i][j].pathImage = "Images/ResizeDoubleLetter.png"
-            matrixSquares[i][i].typeSquare = TypeCell.DOUBLE_LETTER
+            matrixSquares[i][j].typeSquare = TypeCell.DOUBLE_LETTER
     for i in [0, 7, 14]:
         for j in [3, 11]:
             matrixSquares[i][j].pathImage = "Images/ResizeDoubleLetter.png"
-            matrixSquares[i][i].typeSquare = TypeCell.DOUBLE_LETTER
+            matrixSquares[i][j].typeSquare = TypeCell.DOUBLE_LETTER
     for i in [6, 8]:
         for j in [2, 6, 8, 12]:
             matrixSquares[i][j].pathImage = "Images/ResizeDoubleLetter.png"
-            matrixSquares[i][i].typeSquare = TypeCell.DOUBLE_LETTER
+            matrixSquares[i][j].typeSquare = TypeCell.DOUBLE_LETTER
     for i in [2, 12]:
         for j in [6, 8]:
             matrixSquares[i][j].pathImage = "Images/ResizeDoubleLetter.png"
-            matrixSquares[i][i].typeSquare = TypeCell.DOUBLE_LETTER
+            matrixSquares[i][j].typeSquare = TypeCell.DOUBLE_LETTER
     # center cell
     matrixSquares[7][7].pathImage = "Images/ResizeStart.png"
-    matrixSquares[7][7].typeSquare = TypeCell.START_CELL
+    matrixSquares[7][7].typeSquare = TypeCell.DOUBLE_WORD
     #work for click function
     # text for error message
 
@@ -329,23 +330,19 @@ def placeWord():
                     inputUser = inputUser.replace(i, "", 1)
                     placeWordList.append(j)
                     break
-
+        listaOutput = list()
+        for i in copyLettersPlayer:
+            listaOutput.append(i.letter)
+        print(listaOutput)
+        print(inputUser)
         # created a word with other letters
         if inputUser == "":
             return True, placeWordList
         return False, list()
-
-    input1 = wordByUser.get()
-    if input1 not in dex:
-        labelErrorMessage.config(text="Nu exista cuvantul")
-        return
-    if not isInputUserBuildWithValidLetters(input1)[0]:
-        labelErrorMessage.config(text="Cuvantul nu este scris cu literele corecte")
-        return
-    createWordWithClassLetter = isInputUserBuildWithValidLetters(input1)[1]
+    global firstTurn
     try:
         directionInput
-    except:
+    except NameError:
         labelErrorMessage.config(text="Nu ati ales directia")
         return
     try:
@@ -353,14 +350,47 @@ def placeWord():
     except NameError:
         labelErrorMessage.config(text="Nu ati ales patratul")
         return
+
+
+
+    input1 = wordByUser.get()
+    print(lineSquareSelected)
+    print(columnSquareSelected)
+    print(len(input1))
+    print(firstTurn)
+    print(lineSquareSelected > 7 or lineSquareSelected + len(input1) < 7)
+    print(columnSquareSelected)
     if lineSquareSelected is None:
         labelErrorMessage.config(text="Nu ati ales patratul")
         return
+    if directionInput == "Horizontal":
+        if firstTurn is True and ((columnSquareSelected > 7 or columnSquareSelected  + len(input1) < 7) or lineSquareSelected != 7):
+            labelErrorMessage.config(text="Trebuie sa va folositi de patratul din mijloc")
+            return
+    else:
+        if firstTurn is True and ((lineSquareSelected > 7 or lineSquareSelected + len(input1) < 7) or columnSquareSelected != 7):
+            labelErrorMessage.config(text="Trebuie sa va folositi de patratul din mijloc")
+            return
+
+    if input1 not in dex:
+        labelErrorMessage.config(text="Nu exista cuvantul")
+        return
+    if not isInputUserBuildWithValidLetters(input1)[0]:
+        labelErrorMessage.config(text="Cuvantul nu este scris cu literele corecte")
+        return
+    createWordWithClassLetter = isInputUserBuildWithValidLetters(input1)[1]
+
+
+
     for i in createWordWithClassLetter:
         playerList[turnPlayer].letters.remove(i)
 
     hideLetters()
     finishTurnForUI()
+    triplePoints = 0
+    doublePoints = 0
+    player = playerList[turnPlayer]
+    points = 0
     if directionInput == "Horizontal":
         indexColumn = columnSquareSelected
         for i in createWordWithClassLetter:
@@ -369,8 +399,16 @@ def placeWord():
             label1 = tkinter.Label(image=test)
             label1.image = test
             label1.place(x=matrixSquares[lineSquareSelected][indexColumn].pointX, y=matrixSquares[lineSquareSelected][indexColumn].pointY)
-            matrixSquares[lineSquareSelected][indexColumn].isBlocked = True
-            matrixSquares[lineSquareSelected][indexColumn].typeSquare = i
+            matrixSquares[lineSquareSelected][indexColumn].isBlocked = i
+            points = points + i.points
+            if matrixSquares[lineSquareSelected][indexColumn].typeSquare == TypeCell.DOUBLE_LETTER:
+                points = points + i.points
+            elif matrixSquares[lineSquareSelected][indexColumn].typeSquare == TypeCell.TRIPLE_LETTER:
+                points = points + i.points * 2
+            elif matrixSquares[lineSquareSelected][indexColumn].typeSquare == TypeCell.DOUBLE_WORD:
+                doublePoints += 1
+            elif matrixSquares[lineSquareSelected][indexColumn].typeSquare == TypeCell.TRIPLE_WORD:
+                triplePoints += 1
             indexColumn += 1
     else:
         indexLine = lineSquareSelected
@@ -381,11 +419,31 @@ def placeWord():
             label1.image = test
             label1.place(x=matrixSquares[indexLine][columnSquareSelected].pointX, y=matrixSquares[indexLine][columnSquareSelected].pointY)
             matrixSquares[indexLine][columnSquareSelected].isBlocked = True
-            matrixSquares[indexLine][columnSquareSelected].typeSquare = i
+            points = points + i.points
+            if matrixSquares[indexLine][columnSquareSelected].typeSquare == TypeCell.DOUBLE_LETTER:
+                points = points + i.points
+            elif matrixSquares[indexLine][columnSquareSelected].typeSquare == TypeCell.TRIPLE_LETTER:
+                points = points + i.points * 2
+            elif matrixSquares[indexLine][columnSquareSelected].typeSquare == TypeCell.DOUBLE_WORD:
+                doublePoints += 1
+            elif matrixSquares[indexLine][columnSquareSelected].typeSquare == TypeCell.TRIPLE_WORD:
+                triplePoints += 1
             indexLine += 1
+    print(doublePoints)
+    print(triplePoints)
+    for i in range(doublePoints):
+        points *= 2
+    for i in range(triplePoints):
+        points *= 3
+    player.points = points
+    if turnPlayer == 0:
+        pointsLabelPlayerOne.config(text=str(points))
+    else:
+        pointsLabelPlayerTwo.config(text=str(points))
     changeActivityButtons(sTakeLetters="enable")
     labelErrorMessage.config(text="Luati litere noi")
     colorSelection(previousSquare[0], previousSquare[1], '#F0F0F0')
+    firstTurn = False
 
 def takeLetters():
     stringNewLetters = ""
@@ -420,11 +478,11 @@ def changeActivityButtons(sPlaceWord="disabled", sRetryLetters="disabled", sTake
         if sir not in ["disabled", "normal", "enable"]:
             return
     # TODO: testing passed, decomment when it is done
-    placeWordButton["state"] = sPlaceWord
-    retryLettersButtons["state"] = sRetryLetters
-    takeLettersAfterPlacedWordButton["state"] = sTakeLetters
-    hideLettersButton["state"] = sHideLetters
-    finishTurnButtons["state"] = sFinishTurn
+    #placeWordButton["state"] = sPlaceWord
+    #retryLettersButtons["state"] = sRetryLetters
+    #takeLettersAfterPlacedWordButton["state"] = sTakeLetters
+    #hideLettersButton["state"] = sHideLetters
+    #finishTurnButtons["state"] = sFinishTurn
 
 
 def finishTurnFun():
@@ -474,6 +532,8 @@ initializeAllLetters()
 player1 = Player("Player 1", 0, random.sample(bagWithAllLetters, 7))
 player2 = Player("Player 2", 0, random.sample(bagWithAllLetters, 7))
 playerList = [player1, player2]
+#TODO: change to true for final project
+firstTurn = False
 
 InitializeBackground()
 
