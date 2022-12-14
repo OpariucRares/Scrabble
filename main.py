@@ -100,7 +100,7 @@ def displayDirection(choice):
 
 def colorSelection(lineColorSelection, coloumnColorSelection, color):
     # TODO : de comentat pt proiectul final
-    #if placeWordButton["state"] == "enable" or retryLettersButtons["state"] == "enable":
+    if placeWordButton["state"] == "enable" or retryLettersButtons["state"] == "enable":
         verticalLeft = Frame(root, bg=color, height=50, width=2)
         verticalRight = Frame(root, bg=color, height=50, width=2)
         horizontalUp = Frame(root, bg=color, height=2, width=50)
@@ -113,7 +113,7 @@ def colorSelection(lineColorSelection, coloumnColorSelection, color):
 def getMouseClickPosition(line, column):
     def func(e):  # func will be passed an event.
         global lineSquareSelected, columnSquareSelected, labelErrorMessage, previousSquare
-        print(69)
+        #print(69)
         isPreviousSquareDefined = True
         try:
             previousSquare
@@ -189,7 +189,7 @@ def InitializeBackground():
     # text for error message
 
     posRectangleX = 850
-    posRectangleY = 180
+    posRectangleY = 220
     canvas = Canvas(root, width=700, height=100, bg='#315399')
     # canvas.pack()
     canvas.create_rectangle(posRectangleX, posRectangleY, posRectangleX + 100, posRectangleY + 60, fill="red")
@@ -198,7 +198,7 @@ def InitializeBackground():
     global labelErrorMessage
     labelErrorMessage = Label(root, text="Sa inceapa jocul",
                               font=("Courier 15 bold"), justify='left')  # TODO: restructure the interface for the app
-    labelErrorMessage.place(x=880, y=200)
+    labelErrorMessage.place(x=880, y=240)
 
     # create the table
     for i in range(len(matrixSquares)):
@@ -245,9 +245,16 @@ def InitializeBackground():
     labelPrint = Label(root, text="Player Two:")
     labelPrint.place(x=positionXPlayerName, y=positionYPlayerName + 60)
     labelPrint.config(font=("Courier", fontPlayerName))
+    labelPrint = Label(root, text="Number Letters:")
+    labelPrint.place(x=positionXPlayerName, y=positionYPlayerName + 120)
+    labelPrint.config(font=("Courier", fontPlayerName))
+
+
+
 
     global pointsLabelPlayerOne
     global pointsLabelPlayerTwo
+    global numberLettersBag
     positionXPoints = positionXPlayerName + 300
     pointsLabelPlayerOne = Label(root, text="0")
     pointsLabelPlayerOne.place(x=positionXPoints, y=positionYPlayerName)
@@ -257,6 +264,9 @@ def InitializeBackground():
     pointsLabelPlayerTwo.place(x=positionXPoints, y=positionYPlayerName + 60)
     pointsLabelPlayerTwo.config(font=("Courier", fontPlayerName))
 
+    numberLettersBag = Label(root, text=str(len(bagWithAllLetters)))
+    numberLettersBag.place(x=positionXPoints + 100, y=positionYPlayerName + 120)
+    numberLettersBag.config(font=("Courier", fontPlayerName))
     buttonWidth = 15
 
     global wordByUser
@@ -318,27 +328,170 @@ def finishTurnForUI():
     labelPrint.config(font=("Courier Bold", 15))
     showLettersPlayer(playerList[turnPlayer])
 
-
 def placeWord():
     def isInputUserBuildWithValidLetters(inputUser):
+        print(f"Input from isInputUserBuildWith {inputUser}")
         placeWordList = list()
         copyLettersPlayer = playerList[turnPlayer].letters
         # print(copyLettersPlayer)
-        for i in inputUser:
+        copyWord = inputUser
+        for i in range(len(inputUser)):
             for j in copyLettersPlayer:
-                if i == j.letter:
-                    inputUser = inputUser.replace(i, "", 1)
+                print(f"i j {inputUser[i]} {j.letter}")
+                if inputUser[i] == j.letter:
+                    copyWord = copyWord.replace(inputUser[i], "", 1)
                     placeWordList.append(j)
+                    print(f"{inputUser} {inputUser[i]}")
                     break
         listaOutput = list()
         for i in copyLettersPlayer:
             listaOutput.append(i.letter)
-        print(listaOutput)
-        print(inputUser)
+        #print(listaOutput)
+        #print(inputUser)
         # created a word with other letters
-        if inputUser == "":
-            return True, placeWordList
-        return False, list()
+        stringOutput = ""
+        for i in placeWordList:
+            stringOutput += i.letter
+        print(f"Output {stringOutput}")
+        if copyWord == "":
+            return True
+        return False
+
+    def checkNewLettersCreateInvalidWords(listIndexLetters, direction): #todo checking for later
+        newWord = ""
+        for pos, letter in listIndexLetters:
+            newWord = ""
+            if direction == "Vertical":
+                findLeftIndex = columnSquareSelected - 1
+                if findLeftIndex >= 0:
+                    while type(matrixSquares[pos][findLeftIndex].IsBlocked) is Letter:
+                        newWord += matrixSquares[pos][findLeftIndex].isBlocked.letter
+                        findLeftIndex -= 1
+                    newWord = newWord[::-1]
+                newWord += listIndexLetters[1]
+                findRightIndex = columnSquareSelected + 1
+                if findRightIndex <= 14:
+                    while type(matrixSquares[pos][findRightIndex].IsBlocked) is Letter:
+                        newWord += matrixSquares[pos][findRightIndex].isBlocked.letter
+                        findLeftIndex += 1
+                listNewWordsForPlayer.append((pos, findLeftIndex, findRightIndex, "Horizontal"))
+            else:
+                findLeftIndex = lineSquareSelected - 1
+                if findLeftIndex >= 0:
+                    while type(matrixSquares[findLeftIndex][pos].IsBlocked) is Letter:
+                        newWord += matrixSquares[findLeftIndex][pos].isBlocked.letter
+                        findLeftIndex -= 1
+                    newWord = newWord[::-1]
+                newWord += listIndexLetters[1]
+                findRightIndex = columnSquareSelected + 1
+                if findRightIndex <= 14:
+                    while type(matrixSquares[pos][findRightIndex].IsBlocked) is Letter:
+                        newWord += matrixSquares[pos][findRightIndex].isBlocked.letter
+                        findLeftIndex += 1
+                listNewWordsForPlayer.append((pos, findLeftIndex, findRightIndex, "Vertical"))
+            if newWord != listIndexLetters[1] and newWord not in dex:
+                listNewWordsForPlayer.clear()
+                string = "Nu exista cuvantul " + newWord
+                labelErrorMessage.config(text=string)
+                return False
+
+
+
+
+
+    def isWordPlacementValid(direction, lineSquare, columnSquare, limitSquare, inputUser):
+        global listNewWordsForPlayer
+        print(f"is wordPLacementValid {inputUser}")
+
+        if firstTurn is True:
+            return isInputUserBuildWithValidLetters(inputUser), inputUser
+        isConnected = False
+        checkLettersForColision = list()
+        listNewWords = list()
+
+        numberLetter = 0
+        newWord = ""
+        startLine = -1
+        endline = -1
+        posString = 0
+        # checkLettersForColision -> literele noi
+        if direction == "Horizontal":
+            startLine = columnSquare - 1  # TODO de verificat daca depasesc matricea
+            if startLine >= 0:
+                while type(matrixSquares[lineSquare][startLine].isBlocked) is Letter:
+                    print(matrixSquares[lineSquare][startLine].isBlocked)
+                    newWord += matrixSquares[lineSquare][startLine].isBlocked.letter
+                    startLine -= 1
+            newWord = newWord[::-1]
+            for i in range(columnSquare, limitSquare):
+                print(f"linia {lineSquare} coloana {i} blocat {matrixSquares[lineSquare][i].isBlocked}")
+                if type(matrixSquares[lineSquare][i].isBlocked) is Letter:
+                    if inputUser[posString] != matrixSquares[lineSquare][i].isBlocked.letter:
+                        labelErrorMessage.config(text="Cuvantul dat nu se potriveste '\n'cu literele de pe tabla")
+                        return False, list(), ""
+                    isConnected = True
+                    posString += 1
+                    continue
+                newWord += inputUser[posString]
+                checkLettersForColision.append((i, inputUser[posString]))
+                posString += 1
+            endline = checkLettersForColision[len(checkLettersForColision) - 1][0] + 1  # TODO de verificat daca depasesc matricea
+            if endline <= 14:
+                while type(matrixSquares[lineSquare][endline].isBlocked) is Letter:
+                    print(matrixSquares[lineSquare][endline].isBlocked)
+                    newWord += matrixSquares[lineSquare][endline].isBlocked.letter
+                    endline += 1
+
+        if direction == "Vertical":
+            startLine = lineSquare - 1
+            if startLine >= 0:
+                while type(matrixSquares[startLine][columnSquare].isBlocked) is Letter:
+                    print(matrixSquares[startLine][columnSquare].isBlocked)
+                    newWord += matrixSquares[startLine][columnSquare].isBlocked.letter
+                    startLine -= 1
+            newWord = newWord[::-1]
+            for i in range(lineSquare, limitSquare):
+                newWord += inputUser[posString]
+                print(f"linia {i} coloana {columnSquare} blocat {matrixSquares[i][columnSquare].isBlocked}")
+                if type(matrixSquares[i][columnSquare].isBlocked) is Letter:
+                    if inputUser[posString] != matrixSquares[i][columnSquare].isBlocked.letter:
+                        labelErrorMessage.config(text="Cuvantul dat nu se potriveste '\n'cu literele de pe tabla")
+                        return False, list, ""
+                    isConnected = True
+                    posString += 1
+                    continue
+                checkLettersForColision.append((i, inputUser[posString]))
+                posString += 1
+            endline = checkLettersForColision[len(checkLettersForColision) - 1][0] + 1
+            if endline <= 14:
+                while type(matrixSquares[endline][columnSquare].isBlocked) is Letter:
+                    print(matrixSquares[endline][columnSquare].isBlocked)
+                    newWord += matrixSquares[endline][columnSquare].isBlocked.letter
+                    endline += 1
+        print(f"cuvant nou {newWord}")
+        if newWord not in dex:
+            string = "Nu exista cuvantul " + newWord
+            labelErrorMessage.config(text=string)
+            return False, list, ""
+        if newWord != inputUser:
+            isConnected = True
+        listNewWordsForPlayer.append((lineSquare, columnSquare, endline, direction))
+        print(f"{isConnected}")
+
+        if len(checkLettersForColision) == 0:
+            labelErrorMessage.config(text="Nu ai folosit nicio litera noua")
+            return False, list, ""
+        if isConnected is False:
+            labelErrorMessage.config(text="Nu v-ati conectat la o litera")
+            return False, list, ""
+        wordForChecking = ""
+        for pos, letter in checkLettersForColision:
+            wordForChecking += (letter)
+        print(f"Litere noi {checkLettersForColision}")
+        isValid = isInputUserBuildWithValidLetters(wordForChecking)
+        return isValid, newWord
+
+
     global firstTurn
     try:
         directionInput
@@ -353,13 +506,14 @@ def placeWord():
 
 
 
-    input1 = wordByUser.get()
-    print(lineSquareSelected)
-    print(columnSquareSelected)
-    print(len(input1))
-    print(firstTurn)
-    print(lineSquareSelected > 7 or lineSquareSelected + len(input1) < 7)
-    print(columnSquareSelected)
+    input1 = wordByUser.get() # todo: use this case only the first turn
+
+    #print(lineSquareSelected)
+    #print(columnSquareSelected)
+    #print(len(input1))
+    #print(firstTurn)
+    #print(lineSquareSelected > 7 or lineSquareSelected + len(input1) < 7)
+    #print(columnSquareSelected)
     if lineSquareSelected is None:
         labelErrorMessage.config(text="Nu ati ales patratul")
         return
@@ -372,13 +526,20 @@ def placeWord():
             labelErrorMessage.config(text="Trebuie sa va folositi de patratul din mijloc")
             return
 
-    if input1 not in dex:
-        labelErrorMessage.config(text="Nu exista cuvantul")
-        return
-    if not isInputUserBuildWithValidLetters(input1)[0]:
+
+    limitSquare = -1
+    if directionInput == "Horizontal":
+        limitSquare = columnSquareSelected + len(input1)
+    else:
+        limitSquare = lineSquareSelected + len(input1)
+    #TODO de revizuit
+    isValid, listLetters, showNewWord = isWordPlacementValid(directionInput, lineSquareSelected, columnSquareSelected, limitSquare, input1)
+    print(f"isvalid {isValid} listLetters {listLetters}")
+    if isValid is False:
         labelErrorMessage.config(text="Cuvantul nu este scris cu literele corecte")
         return
-    createWordWithClassLetter = isInputUserBuildWithValidLetters(input1)[1]
+
+    createWordWithClassLetter = listLetters
 
 
 
@@ -391,6 +552,11 @@ def placeWord():
     doublePoints = 0
     player = playerList[turnPlayer]
     points = 0
+    #todo make a function to paint it
+    createWordWithClassLetter.clear()
+    createWordWithClassLetter = isInputUserBuildWithValidLetters(showNewWord)[1]
+
+    print(createWordWithClassLetter)
     if directionInput == "Horizontal":
         indexColumn = columnSquareSelected
         for i in createWordWithClassLetter:
@@ -398,6 +564,7 @@ def placeWord():
             test = ImageTk.PhotoImage(image1)
             label1 = tkinter.Label(image=test)
             label1.image = test
+            label1.bind('<Button-1>', getMouseClickPosition(lineSquareSelected, indexColumn))
             label1.place(x=matrixSquares[lineSquareSelected][indexColumn].pointX, y=matrixSquares[lineSquareSelected][indexColumn].pointY)
             matrixSquares[lineSquareSelected][indexColumn].isBlocked = i
             points = points + i.points
@@ -417,8 +584,9 @@ def placeWord():
             test = ImageTk.PhotoImage(image1)
             label1 = tkinter.Label(image=test)
             label1.image = test
+            label1.bind('<Button-1>', getMouseClickPosition(indexLine, columnSquareSelected))
             label1.place(x=matrixSquares[indexLine][columnSquareSelected].pointX, y=matrixSquares[indexLine][columnSquareSelected].pointY)
-            matrixSquares[indexLine][columnSquareSelected].isBlocked = True
+            matrixSquares[indexLine][columnSquareSelected].isBlocked = i
             points = points + i.points
             if matrixSquares[indexLine][columnSquareSelected].typeSquare == TypeCell.DOUBLE_LETTER:
                 points = points + i.points
@@ -429,8 +597,8 @@ def placeWord():
             elif matrixSquares[indexLine][columnSquareSelected].typeSquare == TypeCell.TRIPLE_WORD:
                 triplePoints += 1
             indexLine += 1
-    print(doublePoints)
-    print(triplePoints)
+    #print(doublePoints)
+    #print(triplePoints)
     for i in range(doublePoints):
         points *= 2
     for i in range(triplePoints):
@@ -453,10 +621,13 @@ def takeLetters():
         playerList[turnPlayer].letters.append(i)
         stringNewLetters = stringNewLetters + i.letter
         stringNewLetters += " "
+        bagWithAllLetters.remove(i)
+
     showLettersPlayer(playerList[turnPlayer])
     changeActivityButtons(sHideLetters="enable")
     labelErrorMessage.config(text="Lierele noi sunt " + stringNewLetters + "\nAscundeti literele ca sa vina urmatorul player")
-
+    numberLettersBag.config(text=str(len(bagWithAllLetters)))
+    #help
 def retryFun():
     # changeActivityButtons("disabled")
     for i in player1.letters:
@@ -478,11 +649,11 @@ def changeActivityButtons(sPlaceWord="disabled", sRetryLetters="disabled", sTake
         if sir not in ["disabled", "normal", "enable"]:
             return
     # TODO: testing passed, decomment when it is done
-    #placeWordButton["state"] = sPlaceWord
-    #retryLettersButtons["state"] = sRetryLetters
-    #takeLettersAfterPlacedWordButton["state"] = sTakeLetters
-    #hideLettersButton["state"] = sHideLetters
-    #finishTurnButtons["state"] = sFinishTurn
+    placeWordButton["state"] = sPlaceWord
+    retryLettersButtons["state"] = sRetryLetters
+    takeLettersAfterPlacedWordButton["state"] = sTakeLetters
+    hideLettersButton["state"] = sHideLetters
+    finishTurnButtons["state"] = sFinishTurn
 
 
 def finishTurnFun():
@@ -533,7 +704,8 @@ player1 = Player("Player 1", 0, random.sample(bagWithAllLetters, 7))
 player2 = Player("Player 2", 0, random.sample(bagWithAllLetters, 7))
 playerList = [player1, player2]
 #TODO: change to true for final project
-firstTurn = False
+firstTurn = True
+listNewWordsForPlayer = list()
 
 InitializeBackground()
 
