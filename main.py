@@ -130,7 +130,7 @@ def color_selection(line_color_selection, column_color_selection, color):
 
 
 def get_mouse_click_position(line, column):
-    def func():  # func will be passed an event.
+    def func(e):  # func will be passed an event.
         global line_square_selected, column_square_selected, label_error_message, previous_square
         # print(69)
         is_previous_square_defined = True
