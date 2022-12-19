@@ -6,26 +6,65 @@ from PIL import ImageTk, Image
 
 
 class TypeCell(Enum):
+    """An enum class used to represent the type of the Square from the table
+
+    EMPTY : int - an empty square where a letter can be placed
+    DOUBLE_LETTER : int - if a piece is placed on this type of square, the number of points from the current
+    letter is doubled
+    DOUBLE_WORD : int - if a piece is placed on this type of square, the number of points from the new word
+    is doubled
+    TRIPLE_LETTER : int  - if a piece is placed on this type of square, the number of points from the current
+    letter is tripled
+    TRIPLE_WORD : int - if a piece is placed on this type of square, the number of points from the new word
+    is tripled
+    """
     EMPTY = 1
     DOUBLE_LETTER = 2
     DOUBLE_WORD = 3
     TRIPLE_LETTER = 4
     TRIPLE_WORD = 5
 
-
 class Letter:
-    def __init__(self, letter, points):  # TODO: add image
+    """
+    A class used to represent one piece from the bag
+
+    letter : str - it represents the letter as a character
+    points : int - number of points of the letter
+    letter_pos : int - number of the ascii code from the letter
+    """
+    def __init__(self, letter, points):
+        """
+        Parameters:
+            letter : str - it represents the letter as a character
+            points : int - number of points of the letter
+        """
         self.letter = letter
         self.points = points
         self.letter_pos = ord(letter) - ord("a")
 
     def __str__(self):
+        """
+        It returns the string format of the current class
+
+        Returns:
+            str - it returns the string format of this class
+        """
         return f"{self.letter} Position: {self.letter_pos} Points: {self.points}"
 
 
 class Square:
-    def __init__(self, position, point_x, point_y, is_blocked, type_square, path_Image):
-        self.position = position
+    """
+    A class used to represent the square from the table
+    """
+    def __init__(self, point_x, point_y, is_blocked, type_square, path_Image):
+        """
+        Parameters:
+            point_x : int - the x coordinate of the square
+            point_y : int - the y coordinate of the square
+            is_blocked : bool - checks if the current square is blocked or not
+            type_square : TypeCell(Enum)  - type of the square
+            path_Image : str - remembers the path of the image
+        """
         self.point_x = point_x
         self.point_y = point_y
         self.is_blocked = is_blocked
@@ -34,29 +73,58 @@ class Square:
 
 
 class Player:
-    def __init__(self, name, points, letters):
+    """
+    A class which represents the player\n
+
+    name : str - the name of the player\n
+    points : int - the number of points which the player has\n
+    letters : list(Letter) - a lists of letters which the player has\n
+    has_given_up : bool - checks if the player has given up or not\n
+    """
+    def __init__(self, name, points, letters, has_given_up=False):
+        """
+        Parameters:
+            name : str - the name of the player\n
+            points : int - the number of points which the player has\n
+            letters : list(Letter) - a lists of letters which the player has \n
+            has_given_up : bool - checks if the player has given up or not \n
+        """
         self.name = name
         self.points = points
         self.letters = letters
-        self.has_given_up = False
+        self.has_given_up = has_given_up
         for i in letters:
             bag_with_all_letters.remove(i)
 
 
 def initialize_dex():
-    # fd = open(sys.argv[1], "rt")
-    fd = open("Dictionaries/dictionary.txt", "rt", encoding="utf8")
+    """The program read from the command line the dictionary file"""
+    fd = open(sys.argv[1], "rt")
+    #fd = open("Dictionaries/dictionary.txt", "rt", encoding="utf8")
     for word in fd:
         dex.append(word.strip("\n"))
 
 
 def initialize_all_letters():
+    """It initializes the bag of letters with the pieces for the game.
+    Each piece has the letter and number of points.
+    """
     def initialize_group_of_same_letter(letter, points, number_times):
+        """
+        The pieces are created number_times with the current letter and number of points.
+        The bag with all the pieces is shuffled\n
+
+        Parameters
+            letter : str - the letter\n
+            points : int - the number of points\n
+            number_times : list(Letter) - the number of times the new piece is generated\n
+        """
         global dictionary_letters
         for i in range(number_times):
             bag_with_all_letters.append(Letter(letter, points))
         dictionary_letters.append(Letter(letter, points))
     def test_give_up_button():
+        """This is a function to test the winning strategy"""
         initialize_group_of_same_letter("i", 1, 2)
         initialize_group_of_same_letter("a", 1, 2)
         initialize_group_of_same_letter("e", 1, 2)
@@ -111,11 +179,24 @@ def initialize_all_letters():
 
 
 def display_direction(choice):
+    """It is used to remember the direction of the word
+
+    Parameters
+        choice : str - the direction of the word that the player chose
+    """
     global direction_input
     direction_input = choice
 
 
 def color_selection(line_color_selection, column_color_selection, color):
+    """It colors the margin of the selected square. This is available if the "Place word" button or the
+    "Retry letters" button are enabled
+
+    Parameters
+        line_color_selection : int - the line of the square selected
+        column_color_selection : int - the column of the square selected
+        color : str - the color of the selected square
+    """
     # TODO : de comentat pt proiectul final
     if place_word_button["state"] == "enable" or retry_letters_buttons["state"] == "enable":
         vertical_left = Frame(root, bg=color, height=50, width=2)
@@ -130,9 +211,21 @@ def color_selection(line_color_selection, column_color_selection, color):
 
 
 def get_mouse_click_position(line, column):
+    """
+    When the player selects a square, the game outputs the line and the column of the square of the square selected
+
+    Parameters:
+        line: int - the line of the selected square
+        column: int - the column of the selected square
+    Returns:
+        fun - return the event function when the user clicks the square
+    """
     def func(e):  # func will be passed an event.
+        """
+        Parameters:
+            e: fun - the event function when the user clicks a square
+        """
         global line_square_selected, column_square_selected, label_error_message, previous_square
-        # print(69)
         is_previous_square_defined = True
         try:
             previous_square
@@ -155,29 +248,33 @@ def get_mouse_click_position(line, column):
 
 
 def initialize_background():
+    """
+    It initializes the interface of the application
+    """
     begin_x = 50
     begin_y = 20
     count_squares = 0
-    # add empty cells
+    # Creates the empty squares
     for i in range(15):
         row = list()
         for j in range(15):
-            square = Square(count_squares, begin_x + j * 50, begin_y + i * 50, False, TypeCell.EMPTY,
+            square = Square(begin_x + j * 50, begin_y + i * 50, False, TypeCell.EMPTY,
                             "Images/ResizeEmptyCell.png")
             row.append(square)
         matrix_squares.append(row)
+    # Redefines the double word square
     for i in range(15):
         matrix_squares[i][i].path_image = "Images/ResizeDoubleWord.png"
         matrix_squares[i][i].type_square = TypeCell.DOUBLE_WORD
     for i in range(15):
         matrix_squares[i][14 - i].path_image = "Images/ResizeDoubleWord.png"
         matrix_squares[i][14 - i].type_square = TypeCell.DOUBLE_WORD
-    # triple word
+    # Redefines the triple word square
     for i in range(0, 15, 7):
         for j in range(0, 15, 7):
             matrix_squares[i][j].path_image = "Images/ResizeTripleWord.png"
             matrix_squares[i][j].type_square = TypeCell.TRIPLE_WORD
-    # triple letter
+    # Redefines the triple letter word square
     for i in [1, 5, 9, 13]:
         for j in [5, 9]:
             matrix_squares[i][j].path_image = "Images/ResizeTripleLetter.png"
@@ -187,7 +284,7 @@ def initialize_background():
         matrix_squares[9][j].path_image = "Images/ResizeTripleLetter.png"
         matrix_squares[5][j].type_square = TypeCell.TRIPLE_LETTER
         matrix_squares[9][j].type_square = TypeCell.TRIPLE_LETTER
-    # double letter
+    # Redefines the double letter square
     for i in [3, 11]:
         for j in [0, 7, 14]:
             matrix_squares[i][j].path_image = "Images/ResizeDoubleLetter.png"
@@ -204,25 +301,23 @@ def initialize_background():
         for j in [6, 8]:
             matrix_squares[i][j].path_image = "Images/ResizeDoubleLetter.png"
             matrix_squares[i][j].type_square = TypeCell.DOUBLE_LETTER
-    # center cell
+    # Redefines the starting square
     matrix_squares[7][7].path_image = "Images/ResizeStart.png"
     matrix_squares[7][7].type_square = TypeCell.DOUBLE_WORD
-    # work for click function
-    # text for error message
 
+    # Error message label
+    global label_error_message
     pos_rectangle_x = 850
     pos_rectangle_y = 220
     canvas = Canvas(root, width=700, height=100, bg='#315399')
-    # canvas.pack()
     canvas.create_rectangle(pos_rectangle_x, pos_rectangle_y, pos_rectangle_x + 100, pos_rectangle_y + 60, fill="red")
     canvas.place(x=pos_rectangle_x, y=pos_rectangle_y)
 
-    global label_error_message
     label_error_message = Label(root, text="Sa inceapa jocul",
-                                font=("Courier 15 bold"), justify='left')  # TODO: restructure the interface for the app
+                                font=("Courier 15 bold"), justify='left')
     label_error_message.place(x=880, y=240)
 
-    # create the table
+    # Create the table of all squares
     for i in range(len(matrix_squares)):
         for j in range(len(matrix_squares[i])):
             image1 = Image.open(matrix_squares[i][j].path_image)
@@ -235,13 +330,15 @@ def initialize_background():
     position_direction_x = 1300
     position_direction_y = 550
 
+    # Direction drop down list
+    global direction_cb
     label_print = Label(root, text="Direction of the word")
     label_print.place(x=position_direction_x, y=position_direction_y - 30)
     label_print.config(font=("Courier", 10))
 
     variable_direction = StringVar(root)
     variable_direction.set(direction_word[0])
-    global direction_cb
+
     direction_cb = OptionMenu(root, variable_direction, *direction_word, command=display_direction)
     direction_cb.place(x=position_direction_x, y=position_direction_y)
 
@@ -251,9 +348,11 @@ def initialize_background():
     variable_line = StringVar(root)
     variable_line.set(linePositionCell[0])
 
-    # canvas.pack()
+    # Player scores and number letters bag label
+    global points_label_player_one
+    global points_label_player_two
+    global number_letters_bag
 
-    # player scores
     position_x_player_name = 850
     position_y_player_name = 20
     font_player_name = 30
@@ -267,9 +366,6 @@ def initialize_background():
     label_print.place(x=position_x_player_name, y=position_y_player_name + 120)
     label_print.config(font=("Courier", font_player_name))
 
-    global points_label_player_one
-    global points_label_player_two
-    global number_letters_bag
     position_x_points = position_x_player_name + 300
     points_label_player_one = Label(root, text="0")
     points_label_player_one.place(x=position_x_points, y=position_y_player_name)
@@ -284,6 +380,7 @@ def initialize_background():
     number_letters_bag.config(font=("Courier", font_player_name))
     button_width = 15
 
+    # Input by user
     global word_by_user
     word_by_user = Entry(root, width=40)
     word_by_user.focus_set()
@@ -294,37 +391,51 @@ def initialize_background():
     label_print.place(x=word_by_user_pos_x, y=word_by_user_pos_y - 40)
     label_print.config(font=("Courier", 15))
 
+    # Place word button
+    global place_word_button
     place_buttons_start_pos_x = 850
     place_buttons_start_pos_y = 700
     distance_between_buttons = 110
-    global place_word_button
     place_word_button = ttk.Button(root, text="Place Word", width=button_width, command=place_word)
     place_word_button.place(x=place_buttons_start_pos_x, y=place_buttons_start_pos_y)
 
+    # Retry letters button
     global retry_letters_buttons
     retry_letters_buttons = ttk.Button(root, text="Retry Letters", width=button_width, command=retry_fun)
     retry_letters_buttons.place(x=place_buttons_start_pos_x + distance_between_buttons, y=place_buttons_start_pos_y)
 
+    # Take letters button
     global take_letters_after_placed_word_button
     take_letters_after_placed_word_button = ttk.Button(root, text="Take Letters", width=button_width, command=take_letters)
     take_letters_after_placed_word_button.place(x=place_buttons_start_pos_x + 2 * distance_between_buttons,
                                                 y=place_buttons_start_pos_y)
 
+    # Hide letters button
     global hide_letters_button
     hide_letters_button = ttk.Button(root, text="Hide Letters", width=button_width, command=hide_letters)
     hide_letters_button.place(x=place_buttons_start_pos_x + 3 * distance_between_buttons, y=place_buttons_start_pos_y)
 
+    # Finish turn button
     global finish_turn_buttons
     finish_turn_buttons = ttk.Button(root, text="Finish turn", width=button_width, command=finish_turn_fun)
     finish_turn_buttons.place(x=place_buttons_start_pos_x + 4 * distance_between_buttons, y=place_buttons_start_pos_y)
+
+    # Give up button
     global give_up_button
     give_up_button = ttk.Button(root, text="Give up", width=button_width, command=give_up_fun)
     give_up_button.place(x=place_buttons_start_pos_x + 5 * distance_between_buttons, y=place_buttons_start_pos_y)
     give_up_button["state"] = "disabled"
+
+    # Start of the game (puts the letters for player one)
     finish_turn_for_ui()
     change_activity_buttons(s_place_word="enable", s_retry_letters="enable")
 
 def give_up_fun():
+    """
+    When the user presses the give up button, this method is called. When this is called, the user can not create new
+    words and gets out of the game. However, the winner is based of the number of points of each player. When the game
+    is finished, all the buttons are disabled and the winner's name is shown
+    """
     global turn_player, line_square_selected, column_square_selected, previous_square
     start_count = turn_player
     player_list[turn_player].has_given_up = True
@@ -351,6 +462,10 @@ def give_up_fun():
     column_square_selected = None
     previous_square = None
 def hide_letters():
+    """
+    When the player presses the "Hide letters" button, the current's player letters are hidden, and it passes to the next
+    player.
+    """
     x_hide = 850
     y_hide = 400
     count = 0
@@ -366,6 +481,9 @@ def hide_letters():
 
 
 def finish_turn_for_ui():
+    """
+    When the player presses the "Finish turn" button, it is next player's turn and changes the letters and the name.
+    """
     label_print = Label(root, text=player_list[turn_player].name)
     label_print.place(x=850, y=350)
     label_print.config(font=("Courier Bold", 15))
@@ -373,6 +491,12 @@ def finish_turn_for_ui():
 
 
 def create_list_with_class_letter(input_user):
+    """
+    Parameters:
+        input_user : str - the input from the user
+    Returns:
+        list(Letter) - it returns the input_user as a list of class Letter
+    """
     global dictionary_letters
     list_with_class_letter = list()
     for i in input_user:
@@ -384,7 +508,18 @@ def create_list_with_class_letter(input_user):
 
 
 def place_word():
+    """
+    This method checks is the main function of the game. It checks if the word is valid, calculate the points, places
+    the words on the table and the players take turns.
+    """
     def is_input_user_build_with_valid_letters(input_user):
+        """
+        This method checks if the input_user has the letters from his deck
+        Parameters:
+            input_user : str - the letters of the user which are not board
+        Returns:
+            bool - if it is true, the word is valid. False otherwise.
+        """
         global list_used_jokers
         list_used_jokers.clear()
         print(f"Input from isInputUserBuildWith {input_user}")
@@ -420,51 +555,87 @@ def place_word():
             return True
         return False
 
-    def check_new_letters_create_invalid_words(list_index_letters, direction):  # todo checking for later
+    def check_new_letters_create_invalid_words(list_index_letters, direction):
+        """
+        When a player puts a new word, it must be checked if it creates other invalid words (crosswords situation)
+        Parameters:
+            list_index_letters : list((line, column, letter)) - a list of tuples which contains the line, column and
+            letter of the new piece.
+            direction : str - it is the direction of the new words. If the player created a word in the horizontal direction,
+            then the cross words are created in the vertical direction
+        Returns:
+            bool - it returns true if the new word are correct. If they are correct, it creates a list of the words and
+            sends to the "calculate_points_for_player" function. (bugged)
+        """
         newWord = ""
         for line, column, letter in list_index_letters:
             print(f"linia {line} column {column} litera {letter}")
             newWord = ""
             if direction == "Vertical":
-                find_left_index = column - 1
-                if find_left_index >= 0:
+                if column - 1 >= 0 and type(matrix_squares[line][column - 1 ].is_blocked) is Letter:
+                    find_left_index = column - 1
                     while type(matrix_squares[line][find_left_index].is_blocked) is Letter:
                         newWord += matrix_squares[line][find_left_index].is_blocked.letter
                         find_left_index -= 1
+                    find_left_index += 1
                     newWord = newWord[::-1]
+                else:
+                    find_left_index = column
                 newWord += letter
-                findRightIndex = column + 1
-                if findRightIndex <= 14:
+
+                if column + 1 <= 14 and type(matrix_squares[line][column + 1].is_blocked) is Letter:
+                    findRightIndex = column + 1
                     while type(matrix_squares[line][findRightIndex].is_blocked) is Letter:
                         newWord += matrix_squares[line][findRightIndex].is_blocked.letter
                         findRightIndex += 1
+                    findRightIndex -= 1
+                else:
+                    findRightIndex = column
                 print(f"388 linia {line} column{column} leftIndex {find_left_index} rightIndex {findRightIndex}")
-                if find_left_index + 1 != findRightIndex - 1:
-                    list_new_words_for_player.append((line, find_left_index + 1, findRightIndex, "Horizontal"))
+                #if find_left_index + 1 != findRightIndex: BUG
+                list_new_words_for_player.append((line, find_left_index + 1, findRightIndex, "Horizontal"))
             else:
-                find_left_index = line - 1
-                if find_left_index >= 0:
+                if line - 1 >= 0 and type(matrix_squares[line - 1][column].is_blocked) is Letter:
+                    find_left_index = line - 1
                     while type(matrix_squares[find_left_index][column].is_blocked) is Letter:
                         newWord += matrix_squares[find_left_index][column].is_blocked.letter
                         find_left_index -= 1
+                    find_left_index += 1
                     newWord = newWord[::-1]
+                else:
+                    find_left_index = line
                 newWord += letter
-                findRightIndex = line + 1
-                if findRightIndex <= 14:
+
+                if line + 1 <= 14 and type(matrix_squares[line + 1][column].is_blocked):
+                    findRightIndex = line + 1
                     while type(matrix_squares[findRightIndex][column].is_blocked) is Letter:
                         newWord += matrix_squares[findRightIndex][column].is_blocked.letter
                         findRightIndex += 1
+                    findRightIndex -= 1
+                else:
+                    findRightIndex = line
                 print(f"404 linie {line} column {column} leftIndex {find_left_index} rightIndex {findRightIndex}")
-                if find_left_index + 1 != findRightIndex - 1:
-                    list_new_words_for_player.append((find_left_index + 1, column, findRightIndex, "Vertical"))
+                #if find_left_index + 1 != findRightIndex: BUG
+                list_new_words_for_player.append((find_left_index, column, findRightIndex, "Vertical"))
+            if newWord == letter:
+                list_new_words_for_player.pop()
+            print(f"Cuvant nou {newWord}")
+
             if newWord != letter and newWord not in dex:
+
                 list_new_words_for_player.clear()
                 string = "Nu exista cuvantul " + newWord
                 label_error_message.config(text=string)
                 return False
         return True
 
-    def calculate_points_for_p_layer(listWords):
+    def calculate_points_for_player(listWords):
+        """
+        This method calculate the points from this list of words and outputs to the user the new words
+        Parameters:
+            listWords : list((int, int, int, int)) - it is a list which remembers the starting square position, the end
+            position and the direction of the new word
+        """
         points = 0
         listNewWords = list()
 
@@ -529,6 +700,19 @@ def place_word():
         firstTurn = False
 
     def is_word_placement_valid(direction, lineSquare, columnSquare, limitSquarePlacement, inputUser):
+        """
+        This method if the new word is connected to an old letter from the board. Besides from this, it creates the list
+        of crosswords for later checking.
+        Parameters:
+            direction : str - the direction of the new word
+            lineSquare: int - the line position of the starting square
+            columnSquare: int - the column position of the starting square
+            limitSquarePlacement: int - the limit of the word, based of the direction
+            inputUser: str - the input from the player
+        Returns:
+            isValid : bool - return if the new word is valid or not
+            newWord : str - return the new word
+        """
         global list_new_words_for_player, first_turn
         print(f"is wordPLacementValid {inputUser}")
 
@@ -543,12 +727,15 @@ def place_word():
         posString = 0
         # checkLettersForColision -> literele noi
         if direction == "Horizontal":
-            startLine = columnSquare - 1  # TODO de verificat daca depasesc matricea
-            if startLine >= 0:
+
+            if columnSquare - 1 >= 0 and type(matrix_squares[lineSquare][columnSquare - 1].is_blocked) is Letter:
+                startLine = columnSquare - 1  # TODO de verificat daca depasesc matricea
                 while type(matrix_squares[lineSquare][startLine].is_blocked) is Letter:
                     print(matrix_squares[lineSquare][startLine].is_blocked)
                     newWord += matrix_squares[lineSquare][startLine].is_blocked.letter
                     startLine -= 1
+            else:
+                startLine = columnSquare
             newWord = newWord[::-1]
             for i in range(columnSquare, limitSquarePlacement):
                 print(f"linia {lineSquare} coloana {i} blocat {matrix_squares[lineSquare][i].is_blocked}")
@@ -563,23 +750,27 @@ def place_word():
                 newWord += inputUser[posString]
                 checkLettersForColision.append((lineSquare, i, inputUser[posString]))
                 posString += 1
-            endline = limitSquarePlacement
-            if endline <= 14:
+
+            if limitSquarePlacement + 1 <= 14 and type(matrix_squares[lineSquare][limitSquarePlacement + 1].is_blocked) is Letter:
+                endline = limitSquarePlacement + 1
                 while type(matrix_squares[lineSquare][endline].is_blocked) is Letter:
                     print(matrix_squares[lineSquare][endline].is_blocked)
                     newWord += matrix_squares[lineSquare][endline].is_blocked.letter
                     endline += 1
-                if endline != limitSquarePlacement:
-                    endline -= 1
+            else:
+                endline = limitSquarePlacement
+
             print(f"linie 517 {line_square_selected} {startLine + 1} {endline} {direction} {first_turn}")
-            list_new_words_for_player.append((line_square_selected, startLine + 1, endline, direction))
+            list_new_words_for_player.append((line_square_selected, startLine, endline, direction))
         if direction == "Vertical":
-            startLine = lineSquare - 1
-            if startLine >= 0:
+            if lineSquare - 1 >= 0 and type(matrix_squares[lineSquare - 1][columnSquare].is_blocked) is Letter:
+                startLine = lineSquare - 1
                 while type(matrix_squares[startLine][columnSquare].is_blocked) is Letter:
                     print(matrix_squares[startLine][columnSquare].is_blocked)
                     newWord += matrix_squares[startLine][columnSquare].is_blocked.letter
                     startLine -= 1
+            else:
+                startLine = lineSquare
             newWord = newWord[::-1]
             for i in range(lineSquare, limitSquarePlacement):
                 print(f"linia {i} coloana {columnSquare} blocat {matrix_squares[i][columnSquare].is_blocked}")
@@ -594,16 +785,17 @@ def place_word():
                 checkLettersForColision.append((i, columnSquare, inputUser[posString]))
                 newWord += inputUser[posString]
                 posString += 1
-            endline = limitSquarePlacement
-            if endline <= 14:
+
+            if limitSquarePlacement + 1 <= 14 and type(matrix_squares[limitSquarePlacement + 1][columnSquare].is_blocked) is Letter:
+                endline = limitSquarePlacement + 1
                 while type(matrix_squares[endline][columnSquare].is_blocked) is Letter:
                     print(matrix_squares[endline][columnSquare].is_blocked)
                     newWord += matrix_squares[endline][columnSquare].is_blocked.letter
                     endline += 1
-                if endline != limitSquarePlacement:
-                    endline -= 1
+            else:
+                endline = limitSquarePlacement
             print(f"linie 548 {startLine + 1} {columnSquare} {endline} {direction} {first_turn}")
-            list_new_words_for_player.append((startLine + 1, columnSquare, endline, direction))
+            list_new_words_for_player.append((startLine, column_square_selected, endline, direction))
         print(f"cuvant nou {newWord}")
         if newWord not in dex:
             string = "Nu exista cuvantul " + newWord
@@ -665,6 +857,11 @@ def place_word():
         return isValid, newWord
 
     def put_letters_on_board(listLetters):
+        """
+        It paints the letters on the table
+        Parameters:
+            listLetters: list(Letter) - list of the class letter generated from the input user
+        """
         if direction_input == "Horizontal":
             indexColumn = column_square_selected
             for i in listLetters:
@@ -748,11 +945,15 @@ def place_word():
 
     print(create_word_with_class_letter)
     put_letters_on_board(create_word_with_class_letter)
-    calculate_points_for_p_layer(list_new_words_for_player)
+    calculate_points_for_player(list_new_words_for_player)
     list_new_words_for_player.clear()
 
 
 def take_letters():
+    """
+    After each turn, the player must take the letters to have 7 letters (if they are enought letters)
+    :return:
+    """
     string_new_letters = ""
     number_letters = 7 - len(player_list[turn_player].letters)
     copy_sample_player = list()
@@ -778,6 +979,10 @@ def take_letters():
 
 
 def retry_fun():
+    """
+    If the player is unlucky and can not create valid words, it has the option to put back the letters and take new
+    letters, but looses a turn
+    """
     for i in player_list[turn_player].letters:
         bag_with_all_letters.append(i)
 
@@ -800,11 +1005,20 @@ def retry_fun():
 
 def change_activity_buttons(s_place_word="disabled", s_retry_letters="disabled", s_take_letters="disabled",
                             s_hide_letters="disabled", s_finish_turn="disabled"):
+    """
+    This method disables the buttons in certain casses
+    Parameters:
+        s_place_word : str - enables/disables the place word button
+        s_retry_letters : str - enables/disables the retry letters button
+        s_take_letters : str - enables/disables the take letters button
+        s_hide_letters : str - enables/disables the hide letters button
+        s_finish_turn : str - enables/disables the finish turn button
+    """
     list_input = [s_place_word, s_retry_letters, s_take_letters, s_hide_letters, s_finish_turn]
     for sir in list_input:
         if sir not in ["disabled", "normal", "enable"]:
             return
-    # TODO: testing passed, decomment when it is done
+    # TODO: testing passed, decumment when it is done
     place_word_button["state"] = s_place_word
     retry_letters_buttons["state"] = s_retry_letters
     take_letters_after_placed_word_button["state"] = s_take_letters
@@ -813,6 +1027,9 @@ def change_activity_buttons(s_place_word="disabled", s_retry_letters="disabled",
 
 
 def finish_turn_fun():
+    """
+    When the player finishes the turn, it goes to the next player
+    """
     global turn_player, line_square_selected, column_square_selected, previous_square
     turn_player = (turn_player + 1) % max_players
     hide_letters()
@@ -825,6 +1042,10 @@ def finish_turn_fun():
 
 
 def show_letters_player(player):
+    """
+    It prints the player's current letters next to the table
+    player: Player - the player class
+    """
     count = 0
     show_letters_x = 850
     show_letters_y = 400
@@ -869,6 +1090,3 @@ list_new_words_for_player = list()
 initialize_background()
 
 root.mainloop()
-
-# if __name__ == '__main__':
-#   print("hello")
